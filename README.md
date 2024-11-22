@@ -9,6 +9,83 @@ Graph Node is an open source Rust implementation that event sources the Ethereum
 
 For detailed instructions and more context, check out the [Getting Started Guide](docs/getting-started.md).
 
+## Configuration
+
+To simplify configuration, most dynamic values in the `docker-compose.yaml` file are sourced from environment variables. Below are the key environment variables for RPC and port configuration:
+
+- `RPC_URL`: This is the URL address of the RPC, either public or local. The default value is the public Janus RPC - `http://janus_mainnet:23890`.
+- `GRAPHQL_HOST_PORT`: Specifies the host machine's port to map to the container's port 8000 for the GraphQL HTTP server. By default, this is set to 8000.
+- `GRAPHQL_WS_HOST_PORT`: Specifies the host machine's port to map to the container's port 8001 for the GraphQL WebSocket server. By default, this is set to 8001.
+- `JSONRPC_HOST_PORT`: Specifies the host machine's port to map to the container's port 8020 for the JSONRPC server. By default, this is set to 8020.
+- `INDEX_NODE_SERVER_HOST_PORT`: Specifies the host machine's port to map to the container's port 8030 for the index node server. By default, this is set to 8030.
+- `METRICS_SERVER_HOST_PORT`: Specifies the host machine's port to map to the container's port 8040 for the metrics server. By default, this is set to 8040.
+- `IPFS_HOST_PORT`: Specifies the host machine's port to map to the container's port 5001 for the IPFS server. By default, this is set to 5001.
+- `POSTGRES_HOST_PORT`: Specifies the host machine's port to map to the container's port 5432 for the Postgres server. By default, this is set to 5432.
+
+For other `graph_node` service config variables you can refer to [Environment Variables Documentation](/docs/environment-variables.md).
+
+## To run for Hydra
+
+First, clone the project:
+```sh
+git clone https://github.com/Hydra-Chain/hydragon-graph-node
+```
+
+Then, navigate to the project directory:
+```sh
+cd hydragon-graph-node
+```
+
+Lastly, run it with:
+```sh
+make quick-start
+```
+
+#### Running on Mac with Apple silicon chip and the new docker compose version
+```sh
+make quick-start-mac
+```
+
+To configure it with your own RPC, use the `RPC_URL` environment variable with the make command as follows:
+```sh
+RPC_URL=mainnet:<url> make quick-start-mac
+```
+
+## Networking
+
+Sample nginx config:
+```
+server {
+  server_name graph.hydradex.org;
+
+  location /health {
+    proxy_pass http://127.0.0.1:8030/graphql;
+  }
+
+  location / {
+    proxy_pass http://127.0.0.1:8000/;
+  }
+
+  listen 443 ssl; # managed by Certbot
+  ssl_certificate /etc/letsencrypt/live/graph.hydradex.org/fullchain.pem; # managed by Certbot
+  ssl_certificate_key /etc/letsencrypt/live/graph.hydradex.org/privkey.pem; # managed by Certbot
+  include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+  if ($host = graph.hydradex.org) {
+      return 301 https://$host$request_uri;
+  } # managed by Certbot
+
+  server_name graph.hydradex.org;
+  listen 80;
+  return 404; # managed by Certbot
+}
+```
+
+For more details on how to exactly configure a secure Nginx you can check this [article](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-20-04) from DigitalOcean.
+
 ## Quick Start
 
 ### Prerequisites

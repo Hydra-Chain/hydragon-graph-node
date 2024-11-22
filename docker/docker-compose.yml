@@ -3,11 +3,11 @@ services:
   graph-node:
     image: graphprotocol/graph-node
     ports:
-      - '8000:8000'
-      - '8001:8001'
-      - '8020:8020'
-      - '8030:8030'
-      - '8040:8040'
+      - '${GRAPHQL_HOST_PORT:-8000}:8000'
+      - '${GRAPHQL_WS_HOST_PORT:-8001}:8001'
+      - '${JSONRPC_HOST_PORT:-8020}:8020'
+      - '${INDEX_NODE_SERVER_HOST_PORT:-8030}:8030'
+      - '${METRICS_SERVER_HOST_PORT:-8040}:8040'
     depends_on:
       - ipfs
       - postgres
@@ -19,18 +19,22 @@ services:
       postgres_pass: let-me-in
       postgres_db: graph-node
       ipfs: 'ipfs:5001'
-      ethereum: 'mainnet:http://host.docker.internal:8545'
-      GRAPH_LOG: info
+      ethereum: 'mainnet:${RPC_URL:-http://janus_mainnet:23890}'
+      GRAPH_LOG: ${LOG_LEVEL:-info}
+      GRAPH_QUERY_CACHE_MAX_MEM: ${GRAPH_QUERY_CACHE_MAX_MEM:-1000}
+      GRAPH_ETHEREUM_MAX_BLOCK_RANGE_SIZE: ${GRAPH_ETHEREUM_MAX_BLOCK_RANGE_SIZE:-1000}
+      GRAPH_ETHEREUM_MAX_EVENT_ONLY_RANGE: ${GRAPH_ETHEREUM_MAX_EVENT_ONLY_RANGE:-500}
+      GRAPH_ETHEREUM_TARGET_TRIGGERS_PER_BLOCK_RANGE: ${GRAPH_ETHEREUM_TARGET_TRIGGERS_PER_BLOCK_RANGE:-100}
   ipfs:
     image: ipfs/kubo:v0.17.0
     ports:
-      - '5001:5001'
+      - '${IPFS_HOST_PORT:-5001}:5001'
     volumes:
       - ./data/ipfs:/data/ipfs:Z
   postgres:
     image: postgres
     ports:
-      - '5432:5432'
+      - '${POSTGRES_HOST_PORT:-5432}:5432'
     command:
       [
         "postgres",
