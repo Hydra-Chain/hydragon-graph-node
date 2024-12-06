@@ -51,6 +51,59 @@ To configure it with your own RPC, use the `RPC_URL` environment variable with t
 RPC_URL=mainnet:<url> make quick-start-mac
 ```
 
+### Create and deploy a subgraph
+
+1. Ensure that you have installed the Graph CLI or install it
+
+```sh
+npm install -g @graphprotocol/graph-cli@latest
+```
+
+2. Create a new directory
+
+```sh
+mkdir <subgraph-name>
+```
+
+3. Move to the new directory
+
+```sh
+cd <subgraph-name>
+```
+
+4. Initialize a subgraph
+  
+```sh
+graph init
+```
+
+- You have to choose the `ethereum` protocol
+- Do not enter any subgraph slug, just hit enter
+- For the diretory, enter `.` in order to create it in the current directory
+- Choose the `mainnet` Ethereum network
+- Enter the address of the contract that you want this subgraph to work with
+- Then, it will try to fetch the ABI, start block and contract, but you have to always deny by hitting the `n` button for No to avoid retries
+- After denying the previous steps, you will have to add the path to the ABI file of the contract
+- Enter the starting block - the one where the contract was deployed
+- Enter the contract name
+- Select `yes` to index contract events as entities
+- It will show that the directory already exists, but you will choose to `overwrite` it and initialize the subgraph
+- You will be prompted if you want to add more contracts or not
+
+5. Create the graph on the Graph Node
+
+```sh
+graph create --node http://localhost:8020 generated/<contract-name>/
+```
+
+6. Deploy the subgraph to the IPFS
+
+```sh
+graph deploy --ipfs http://localhost:5001 --node http://localhost:8020 generated/<contract-name> ./subgraph.yaml
+```
+
+Congratulations! Your subgraph is deployed and you will be able to see the URL where you can access it in the output.
+
 ## Networking
 
 Sample nginx config:
